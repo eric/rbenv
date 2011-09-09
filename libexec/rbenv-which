@@ -31,11 +31,25 @@ remove_from_path() {
   echo "${result%:}"
 }
 
+remove_shims_from_path() {
+  local command="$1"
+  local path=${command%/*}
+  local parent=${path##*/}
+
+  if [ "$parent" = "shims" ]; then
+    echo "$(remove_from_path "$path")"
+  else
+    echo "$PATH"
+  fi
+}
+
 RBENV_VERSION="$(rbenv-version-name)"
 RBENV_COMMAND="$1"
 
 if [ "$RBENV_VERSION" = "system" ]; then
   PATH="$(remove_from_path "${HOME}/.rbenv/shims")"
+  RBENV_COMMAND_PATH="$(command -v "$RBENV_COMMAND")"
+  PATH="$(remove_shims_from_path "$RBENV_COMMAND_PATH")"
   RBENV_COMMAND_PATH="$(command -v "$RBENV_COMMAND")"
 else
   RBENV_COMMAND_PATH="${HOME}/.rbenv/versions/${RBENV_VERSION}/bin/${RBENV_COMMAND}"
